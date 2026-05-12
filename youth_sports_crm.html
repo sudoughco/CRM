@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Youth Sports CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" onerror="this.remove()">
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #f0ede8;
+  --border: #e2ded8;
+  --border2: #ccc9c2;
+  --text: #1a1917;
+  --text2: #6b6860;
+  --text3: #9e9b96;
+  --accent: #2563eb;
+  --accent-bg: #eff6ff;
+  --green: #16a34a;
+  --green-bg: #f0fdf4;
+  --amber: #d97706;
+  --amber-bg: #fffbeb;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --teal: #0d9488;
+  --teal-bg: #f0fdfa;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+/* Layout */
+.app { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+/* Sidebar */
+.sidebar-logo { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); }
+.sidebar-logo .logo-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+.sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+.nav { padding: 12px 10px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text2); font-size: 13px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px; }
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--accent); color: #fff; }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--border); }
+.sidebar-footer .stat { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.sidebar-footer .stat span { color: var(--text); font-weight: 600; }
+
+/* Topbar */
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.topbar-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.search-wrap { position: relative; }
+.search-wrap input { padding: 7px 12px 7px 34px; border: 1px solid var(--border); border-radius: 20px; font-size: 13px; background: var(--bg); width: 220px; font-family: inherit; color: var(--text); outline: none; transition: border 0.15s; }
+.search-wrap input:focus { border-color: var(--accent); background: var(--surface); }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); width: 15px; height: 15px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fee2e2; }
+
+/* Metrics */
+.metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; padding: 20px 24px; }
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+.metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 8px; }
+.metric-val { font-size: 28px; font-weight: 600; color: var(--text); letter-spacing: -1px; line-height: 1; }
+.metric-val.green { color: var(--green); }
+.metric-val.red { color: var(--red); }
+.metric-val.amber { color: var(--amber); }
+
+/* Content area */
+.content { padding: 0 24px 24px; flex: 1; }
+
+/* Views */
+.view { display: none; }
+.view.active { display: block; }
+
+/* Kanban */
+.kanban { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 4px; }
+.kol { background: var(--surface2); border-radius: var(--radius); padding: 12px; min-height: 200px; }
+.kol-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.kol-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
+.kol-count { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1px 7px; font-size: 11px; color: var(--text2); font-weight: 600; }
+.kcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 11px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow); }
+.kcard:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.kcard-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.kcard-sport { font-size: 10px; color: var(--text3); margin-bottom: 5px; }
+.kcard-rating { display: flex; gap: 1px; margin-bottom: 4px; }
+.star { font-size: 10px; }
+.star.filled { color: #f59e0b; }
+.star.empty { color: var(--border2); }
+.kcard-fu { font-size: 10px; display: flex; align-items: center; gap: 3px; margin-top: 4px; }
+.kcard.overdue { border-left: 3px solid var(--red); }
+.kcard.due-soon { border-left: 3px solid var(--amber); }
+.kcard.high-priority { border-top: 2px solid var(--accent); }
+
+/* Table */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.table-controls { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.table-controls select, .table-controls input { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; background: var(--bg); color: var(--text); outline: none; }
+.table-controls select:focus, .table-controls input:focus { border-color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; font-weight: 600; font-size: 11px; color: var(--text3); padding: 10px 12px; border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px; background: var(--bg); user-select: none; }
+th:hover { color: var(--text); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.td-org { font-weight: 600; font-size: 12px; }
+.td-actions { display: flex; gap: 4px; }
+.icon-btn { background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px; border-radius: 4px; display: flex; align-items: center; transition: all 0.1s; }
+.icon-btn:hover { background: var(--surface2); color: var(--text); }
+.icon-btn svg { width: 14px; height: 14px; }
+
+/* Stage pills */
+.pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.pill-prospect { background: var(--surface2); color: var(--text2); }
+.pill-contacted { background: var(--amber-bg); color: var(--amber); }
+.pill-meeting { background: var(--purple-bg); color: var(--purple); }
+.pill-proposal { background: var(--accent-bg); color: var(--accent); }
+.pill-won { background: var(--green-bg); color: var(--green); }
+.pill-lost { background: var(--red-bg); color: var(--red); }
+
+/* Rating stars */
+.rating-display { display: flex; gap: 2px; }
+.rating-display .star { font-size: 13px; }
+
+/* Follow-ups view */
+.followup-list { display: grid; gap: 10px; }
+.fu-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; box-shadow: var(--shadow); transition: all 0.15s; }
+.fu-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.fu-card.overdue { border-left: 4px solid var(--red); }
+.fu-card.due-today { border-left: 4px solid var(--amber); }
+.fu-card.due-soon { border-left: 4px solid #3b82f6; }
+.fu-card-left { flex: 1; }
+.fu-org { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+.fu-meta { font-size: 11px; color: var(--text3); display: flex; gap: 10px; }
+.fu-date { text-align: right; }
+.fu-days { font-weight: 600; font-size: 13px; }
+.fu-days.overdue { color: var(--red); }
+.fu-days.today { color: var(--amber); }
+.fu-days.soon { color: var(--accent); }
+
+/* Email generator */
+.email-gen { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.email-gen-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.form-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; }
+.form-field select, .form-field input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--bg); color: var(--text); outline: none; }
+.form-field select:focus, .form-field input:focus { border-color: var(--accent); background: var(--surface); }
+.email-output { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px; font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; font-family: 'DM Mono', monospace; min-height: 200px; }
+.email-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-md); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 20px; padding: 0; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.modal-grid.full { grid-template-columns: 1fr; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; }
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--bg); color: var(--text); outline: none; transition: border 0.15s; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
+.field textarea { height: 72px; resize: vertical; }
+.rating-input { display: flex; gap: 4px; margin-top: 4px; }
+.rating-star { font-size: 22px; cursor: pointer; color: var(--border2); transition: color 0.1s; }
+.rating-star:hover, .rating-star.active { color: #f59e0b; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* Section header */
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 14px; }
+.section-title { font-size: 14px; font-weight: 600; color: var(--text2); }
+
+/* Empty state */
+.empty { text-align: center; padding: 48px 20px; color: var(--text3); }
+.empty svg { width: 40px; height: 40px; margin: 0 auto 12px; opacity: 0.4; }
+
+/* Toast */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@media (max-width: 1100px) {
+  .kanban { grid-template-columns: repeat(3, 1fr); }
+  .metrics { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .kanban { grid-template-columns: repeat(2, 1fr); }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">Youth Sports CRM</div>
+    <div class="logo-sub">Prospect management</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="switchView('pipeline', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg>
+      Pipeline
+    </div>
+    <div class="nav-item" onclick="switchView('contacts', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      All contacts
+    </div>
+    <div class="nav-item" onclick="switchView('followups', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Follow-ups
+    </div>
+    <div class="nav-item" onclick="switchView('email', this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Email generator
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="stat">Total contacts: <span id="sb-total">0</span></div>
+    <div class="stat">Closed won: <span id="sb-won">0</span></div>
+    <div class="stat">Follow-ups due: <span id="sb-due">0</span></div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-title" id="view-title">Pipeline</div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="gsearch" placeholder="Search contacts…" oninput="renderAll()">
+      </div>
+      <button class="btn btn-ghost" onclick="exportCSV()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-primary" onclick="openAdd()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add contact
+      </button>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="metric-card"><div class="metric-label">Total prospects</div><div class="metric-val" id="m-total">0</div></div>
+    <div class="metric-card"><div class="metric-label">In pipeline</div><div class="metric-val" id="m-pipeline">0</div></div>
+    <div class="metric-card"><div class="metric-label">Meetings set</div><div class="metric-val amber" id="m-meetings">0</div></div>
+    <div class="metric-card"><div class="metric-label">Closed won</div><div class="metric-val green" id="m-won">0</div></div>
+    <div class="metric-card"><div class="metric-label">Follow-ups due</div><div class="metric-val red" id="m-due">0</div></div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Pipeline view -->
+    <div class="view active" id="view-pipeline">
+      <div class="kanban" id="kanban"></div>
+    </div>
+
+    <!-- Contacts view -->
+    <div class="view" id="view-contacts">
+      <div class="table-wrap">
+        <div class="table-controls">
+          <select id="stageFilter" onchange="renderAll()">
+            <option value="">All stages</option>
+            <option>Prospect</option><option>Contacted</option><option>Meeting scheduled</option><option>Proposal sent</option><option>Closed won</option><option>Closed lost</option>
+          </select>
+          <select id="sportFilter" onchange="renderAll()">
+            <option value="">All sports</option>
+            <option>Football</option><option>Basketball</option><option>Baseball</option><option>Soccer</option><option>Lacrosse</option><option>Rowing</option><option>Track</option><option>Multi-sport</option>
+          </select>
+          <select id="ratingFilter" onchange="renderAll()">
+            <option value="">All ratings</option>
+            <option value="5">★★★★★ only</option>
+            <option value="4">★★★★+ </option>
+            <option value="3">★★★+</option>
+          </select>
+          <select id="sourceFilter" onchange="renderAll()">
+            <option value="">All sources</option>
+            <option>PYSC directory</option><option>PPR rec center</option><option>West Philly search</option><option>Manual entry</option><option>Referral</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th onclick="sortBy('org')">Organization</th>
+            <th onclick="sortBy('contact')">Contact</th>
+            <th onclick="sortBy('sport')">Sport</th>
+            <th onclick="sortBy('stage')">Stage</th>
+            <th onclick="sortBy('rating')">Rating</th>
+            <th onclick="sortBy('phone')">Phone</th>
+            <th onclick="sortBy('lastContact')">Last contact</th>
+            <th onclick="sortBy('followUp')">Follow-up</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="contact-tbody"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Follow-ups view -->
+    <div class="view" id="view-followups">
+      <div class="followup-list" id="followup-list"></div>
+    </div>
+
+    <!-- Email generator view -->
+    <div class="view" id="view-email">
+      <div class="email-gen">
+        <div class="email-gen-form">
+          <div class="form-field">
+            <label>Select contact</label>
+            <select id="email-contact" onchange="updateEmailPreview()">
+              <option value="">— Choose a contact —</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Email template</label>
+            <select id="email-template" onchange="updateEmailPreview()">
+              <option value="intro">Initial outreach / introduction</option>
+              <option value="followup">Follow-up after no response</option>
+              <option value="meeting">Request a meeting</option>
+              <option value="proposal">Proposal follow-up</option>
+              <option value="thanks">Thank you after meeting</option>
+              <option value="checkin">Seasonal check-in</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Your name</label>
+            <input type="text" id="email-sender" placeholder="Your name" oninput="updateEmailPreview()" value="">
+          </div>
+          <div class="form-field">
+            <label>Your organization</label>
+            <input type="text" id="email-yourorg" placeholder="Your organization name" oninput="updateEmailPreview()" value="">
+          </div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Generated email</div>
+        <div class="email-output" id="email-output">Select a contact and template above to generate an email.</div>
+        <div class="email-actions">
+          <button class="btn btn-primary" onclick="copyEmail()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy to clipboard
+          </button>
+          <button class="btn btn-ghost" onclick="markContacted()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Mark as contacted
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add contact</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-grid full"><div class="field"><label>Organization name *</label><input id="f-org" type="text" placeholder="e.g. Calvary Athletic Association"></div></div>
+    <div class="modal-grid">
+      <div class="field"><label>Contact name</label><input id="f-contact" type="text" placeholder="First Last"></div>
+      <div class="field"><label>Title / role</label><input id="f-title" type="text" placeholder="e.g. Executive Director"></div>
+    </div>
+    <div class="modal-grid">
+      <div class="field"><label>Phone</label><input id="f-phone" type="tel" placeholder="215-555-0100"></div>
+      <div class="field"><label>Email</label><input id="f-email" type="email" placeholder="name@org.org"></div>
+    </div>
+    <div class="modal-grid">
+      <div class="field"><label>Sport / program areas</label><input id="f-sport" type="text" placeholder="Football, Basketball…"></div>
+      <div class="field"><label>Address / neighborhood</label><input id="f-addr" type="text" placeholder="West Philly, PA 19139"></div>
+    </div>
+    <div class="modal-grid">
+      <div class="field"><label>Stage</label>
+        <select id="f-stage">
+          <option>Prospect</option><option>Contacted</option><option>Meeting scheduled</option><option>Proposal sent</option><option>Closed won</option><option>Closed lost</option>
+        </select>
+      </div>
+      <div class="field"><label>Source</label>
+        <select id="f-source">
+          <option>PYSC directory</option><option>PPR rec center</option><option>West Philly search</option><option>Manual entry</option><option>Referral</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-grid">
+      <div class="field"><label>Last contact date</label><input id="f-last" type="date"></div>
+      <div class="field"><label>Next follow-up date</label><input id="f-next" type="date"></div>
+    </div>
+    <div class="modal-grid full">
+      <div class="field"><label>Priority rating</label>
+        <div class="rating-input" id="rating-input">
+          <span class="rating-star" data-val="1" onclick="setRating(1)">★</span>
+          <span class="rating-star" data-val="2" onclick="setRating(2)">★</span>
+          <span class="rating-star" data-val="3" onclick="setRating(3)">★</span>
+          <span class="rating-star" data-val="4" onclick="setRating(4)">★</span>
+          <span class="rating-star" data-val="5" onclick="setRating(5)">★</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-grid full"><div class="field"><label>Notes</label><textarea id="f-notes" placeholder="Conversation notes, interests, next steps…"></textarea></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="delete-btn" onclick="deleteCurrentContact()" style="display:none">Delete</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveContact()">Save contact</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STAGES = ['Prospect','Contacted','Meeting scheduled','Proposal sent','Closed won','Closed lost'];
+const STAGE_PILL = {
+  'Prospect':'pill-prospect','Contacted':'pill-contacted','Meeting scheduled':'pill-meeting',
+  'Proposal sent':'pill-proposal','Closed won':'pill-won','Closed lost':'pill-lost'
+};
+
+const SEED = [
+  {id:1,org:'Calvary Athletic Association',contact:'',title:'',phone:'215-637-1888',email:'calvaryaa@comcast.net',sport:'Baseball, Football, Basketball, Lacrosse',addr:'4330 Deerpath Ln, Philadelphia, PA 19154',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:5,notes:'Multi-sport AA. Key priority — baseball, football, basketball, lacrosse all in one.'},
+  {id:2,org:'Boys & Girls Clubs of Philadelphia',contact:'',title:'',phone:'215-735-8818',email:'admin@bgcphila.org',sport:'Basketball, Baseball, Football, Soccer',addr:'1518 Walnut St., Suite 605, Philadelphia, PA 19102',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:5,notes:'Major citywide org. Multiple locations. High priority.'},
+  {id:3,org:'Lighthouse 1893',contact:'',title:'',phone:'215-425-7800',email:'info@lighthouse1893.org',sport:'Baseball, Football, Soccer, Volleyball',addr:'101 East Erie Ave., Philadelphia, PA 19134',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:4,notes:'Full-service multi-sport org. Strong community ties.'},
+  {id:4,org:'Frankford Chargers Sports & Mentoring',contact:'',title:'',phone:'267-289-2436',email:'frankfordchargers@verizon.net',sport:'Football, Basketball, Baseball',addr:'4800 Ditman St., Philadelphia, PA 19124',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:4,notes:'2024 national U8 football champions.'},
+  {id:5,org:'Philadelphia Youth Basketball',contact:'Kenneth B. Holdsman',title:'',phone:'215-864-8274',email:'info@phillyyouthbasketball.org',sport:'Basketball',addr:'4250 Wissahickon Ave., Philadelphia, PA 19129',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:5,notes:'New $36M Horwitz Center opened 2024. Dozens of programs.'},
+  {id:6,org:'Timoteo Sports',contact:'',title:'',phone:'215-470-8406',email:'info@timoteosports.org',sport:'Football, Basketball, Volleyball',addr:'1300 W. Hunting Park Ave., Philadelphia, PA 19140',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:3,notes:'Faith-based multi-sport org.'},
+  {id:7,org:'Harlem Lacrosse – Philadelphia',contact:'',title:'',phone:'',email:'info@harlemlacrosse.org',sport:'Lacrosse',addr:'6100 N. Front St., Philadelphia, PA 19120',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:3,notes:'Academic support + lacrosse. School-embedded model.'},
+  {id:8,org:'Philadelphia City Rowing',contact:'',title:'',phone:'',email:'info@philadelphiacityrowing.org',sport:'Rowing',addr:'#1 Boathouse Row, Philadelphia, PA 19130',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:3,notes:'Large team sport — 8-person boats. College readiness focus.'},
+  {id:9,org:'Give and Go Athletics',contact:'',title:'',phone:'267-978-5946',email:'giveandgoathletics@gmail.com',sport:'Basketball, Baseball, Soccer',addr:'3000 W. Master St. Suite D, Philadelphia, PA 19121',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:4,notes:'West & North Philly focused. SEL component.'},
+  {id:10,org:'Philadelphia Youth Football Academy',contact:'',title:'',phone:'',email:'epough@pyfa215.org',sport:'Football, Flag football',addr:'East Germantown / NW Philadelphia',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:3,notes:'Flag & tackle enrichment + athletic training.'},
+  {id:11,org:'Anderson Monarchs',contact:'',title:'',phone:'215-287-2417',email:'info@andersonmonarchs.org',sport:'Baseball, Soccer, Basketball',addr:'744 S. 17th St., Philadelphia, PA 19146',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:4,notes:''},
+  {id:12,org:'Beat the Streets Philadelphia',contact:'',title:'',phone:'215-454-2255',email:'btsphilly@btsphilly.org',sport:'Wrestling',addr:'3700 Market St., Suite 300, Philadelphia, PA 19104',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:3,notes:''},
+  {id:13,org:'Legacy Youth Tennis & Education',contact:'J. Carter',title:'',phone:'215-487-3477',email:'jcarter@legacyyte.org',sport:'Tennis',addr:'4842 Ridge Ave., Philadelphia, PA 19129',stage:'Prospect',source:'PYSC directory',lastContact:'',followUp:'',rating:3,notes:''},
+  {id:14,org:'Police Athletic League (PAL)',contact:'',title:'',phone:'215-291-9000',email:'',sport:'Multi-sport',addr:'Philadelphia, PA (18+ centers citywide)',stage:'Prospect',source:'PPR rec center',lastContact:'',followUp:'',rating:5,notes:'18 centers citywide. Baseball, soccer, wrestling, golf. High volume.'},
+  {id:15,org:'Overbrook Monarchs Youth Football',contact:'',title:'',phone:'',email:'',sport:'Football, Cheerleading',addr:'N. 66th St & Callowhill St, Philadelphia, PA 19151',stage:'Prospect',source:'West Philly search',lastContact:'',followUp:'',rating:4,notes:'1,000 youth annually. Ages 5-14 NESAC League. Est. 2004.'},
+  {id:16,org:'West Philly Panthers',contact:'',title:'',phone:'',email:'',sport:'Football, Cheerleading',addr:'2635 Manton St, Philadelphia, PA 19146',stage:'Prospect',source:'West Philly search',lastContact:'',followUp:'',rating:3,notes:'AYF football ages 5-14. Est. 1991.'},
+  {id:17,org:'West Philadelphia Soccer Academy',contact:'',title:'',phone:'215-821-8422',email:'',sport:'Soccer',addr:'1452 N. 53rd St, Philadelphia, PA 19131',stage:'Prospect',source:'West Philly search',lastContact:'',followUp:'',rating:3,notes:'501c3. Youth ages 4-14. Mon-Fri 1-8pm.'},
+  {id:18,org:'YMCA West Philadelphia (Haddington)',contact:'',title:'',phone:'215-747-2135',email:'',sport:'Basketball, Soccer, Football, Swimming',addr:'5120 Haverford Ave, Philadelphia, PA 19139',stage:'Prospect',source:'West Philly search',lastContact:'',followUp:'',rating:4,notes:'Broad multi-sport after-school & camp programs.'},
+  {id:19,org:'PPR – Rob Jackson',contact:'Rob Jackson',title:'Deputy Commissioner, Programs',phone:'215-683-3638',email:'Rob.Jackson@Phila.gov',sport:'Multi-sport',addr:'Philadelphia Parks & Recreation',stage:'Prospect',source:'PPR rec center',lastContact:'',followUp:'',rating:5,notes:'Key PPR contact for youth sports partnerships citywide.'},
+  {id:20,org:'PPR – Mike Barsotti',contact:'Mike Barsotti',title:'Youth Sports Director',phone:'215-683-3600',email:'parksandrecreation@phila.gov',sport:'Multi-sport',addr:'Philadelphia Parks & Recreation',stage:'Prospect',source:'PPR rec center',lastContact:'',followUp:'',rating:5,notes:'Direct contact for youth sports grants & PPR programming.'},
+];
+
+let contacts = (() => { try { const s = localStorage.getItem('ysc_contacts'); return s ? JSON.parse(s) : SEED.map(c=>({...c})); } catch(e) { return SEED.map(c=>({...c})); } })();
+let nextId = Math.max(...contacts.map(c=>c.id)) + 1;
+let editingId = null;
+let currentRating = 0;
+let sortKey = 'org', sortDir = 1;
+let activeView = 'pipeline';
+
+function save() { try { localStorage.setItem('ysc_contacts', JSON.stringify(contacts)); } catch(e) {} }
+
+function today() { return new Date().toISOString().split('T')[0]; }
+function daysUntil(d) { if(!d) return null; return Math.round((new Date(d) - new Date(today())) / 86400000); }
+function fmtDate(d) { if(!d) return ''; const p=d.split('-'); return `${p[1]}/${p[2]}/${p[0]}`; }
+function stars(n, size='13px') {
+  let s = '';
+  for(let i=1;i<=5;i++) s += `<span class="star ${i<=n?'filled':'empty'}" style="font-size:${size}">★</span>`;
+  return s;
+}
+function stagePill(s) { return `<span class="pill ${STAGE_PILL[s]||'pill-prospect'}">${s}</span>`; }
+
+function renderMetrics() {
+  const total = contacts.length;
+  const pipeline = contacts.filter(c=>!c.stage.includes('Closed')).length;
+  const won = contacts.filter(c=>c.stage==='Closed won').length;
+  const meetings = contacts.filter(c=>c.stage==='Meeting scheduled').length;
+  const due = contacts.filter(c=>c.followUp&&daysUntil(c.followUp)<=0&&!c.stage.includes('Closed')).length;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-pipeline').textContent = pipeline;
+  document.getElementById('m-meetings').textContent = meetings;
+  document.getElementById('m-won').textContent = won;
+  document.getElementById('m-due').textContent = due;
+  document.getElementById('sb-total').textContent = total;
+  document.getElementById('sb-won').textContent = won;
+  document.getElementById('sb-due').textContent = due;
+}
+
+function getFiltered() {
+  const q = document.getElementById('gsearch').value.toLowerCase();
+  const sf = document.getElementById('stageFilter')?.value || '';
+  const spf = document.getElementById('sportFilter')?.value.toLowerCase() || '';
+  const rf = parseInt(document.getElementById('ratingFilter')?.value || '0');
+  const src = document.getElementById('sourceFilter')?.value || '';
+  return contacts.filter(c => {
+    const mq = !q || (c.org+c.contact+c.sport+c.notes+c.addr).toLowerCase().includes(q);
+    const ms = !sf || c.stage === sf;
+    const msp = !spf || c.sport.toLowerCase().includes(spf);
+    const mr = !rf || (c.rating||0) >= rf;
+    const msrc = !src || c.source === src;
+    return mq && ms && msp && mr && msrc;
+  });
+}
+
+function renderPipeline() {
+  const q = document.getElementById('gsearch').value.toLowerCase();
+  const el = document.getElementById('kanban');
+  let html = '';
+  STAGES.forEach(stage => {
+    let group = contacts.filter(c => c.stage === stage);
+    if(q) group = group.filter(c => (c.org+c.contact+c.sport).toLowerCase().includes(q));
+    group.sort((a,b) => (b.rating||0)-(a.rating||0));
+    html += `<div class="kol">
+      <div class="kol-header"><span class="kol-title">${stage}</span><span class="kol-count">${group.length}</span></div>`;
+    if(!group.length) html += `<div style="font-size:11px;color:var(--text3);text-align:center;padding:16px 0">No contacts</div>`;
+    group.forEach(c => {
+      const du = daysUntil(c.followUp);
+      const cardCls = du!==null&&du<0 ? 'kcard overdue' : du!==null&&du<=2 ? 'kcard due-soon' : (c.rating||0)>=5 ? 'kcard high-priority' : 'kcard';
+      html += `<div class="${cardCls}" onclick="openEdit(${c.id})">
+        <div class="kcard-name">${c.org}</div>
+        <div class="kcard-sport">${c.sport ? c.sport.split(',')[0].trim() : ''}</div>
+        <div class="kcard-rating">${stars(c.rating||0,'11px')}</div>
+        ${c.followUp ? `<div class="kcard-fu" style="color:${du<0?'var(--red)':du<=2?'var(--amber)':'var(--text3)'}">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${fmtDate(c.followUp)}${du<0?' (overdue)':du===0?' (today)':''}
+        </div>` : ''}
+      </div>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderContacts() {
+  let rows = getFiltered().sort((a,b) => {
+    let av = a[sortKey]||'', bv = b[sortKey]||'';
+    if(sortKey==='rating') { av=a.rating||0; bv=b.rating||0; return (bv-av)*sortDir; }
+    return av.toString().localeCompare(bv.toString())*sortDir;
+  });
+  const tb = document.getElementById('contact-tbody');
+  if(!tb) return;
+  tb.innerHTML = '';
+  rows.forEach(c => {
+    const du = daysUntil(c.followUp);
+    const fuColor = du!==null&&du<0 ? 'var(--red)' : du!==null&&du<=3 ? 'var(--amber)' : 'var(--text3)';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-org">${c.org}</td>
+      <td>${c.contact||'<span style="color:var(--text3)">—</span>'}</td>
+      <td>${c.sport ? c.sport.split(',').slice(0,2).map(s=>`<span style="background:var(--green-bg);color:var(--green);font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;margin-right:2px;display:inline-block">${s.trim()}</span>`).join('') : '<span style="color:var(--text3)">—</span>'}</td>
+      <td>${stagePill(c.stage)}</td>
+      <td><div class="rating-display">${stars(c.rating||0)}</div></td>
+      <td>${c.phone ? `<a href="tel:${c.phone.replace(/\D/g,'')}" style="color:var(--accent);text-decoration:none">${c.phone}</a>` : '<span style="color:var(--text3)">—</span>'}</td>
+      <td style="color:var(--text3)">${fmtDate(c.lastContact)||'—'}</td>
+      <td style="color:${fuColor};font-weight:${du!==null&&du<0?'600':'400'}">${fmtDate(c.followUp)||'—'}${du!==null&&du<0?' ⚠':''}${du===0?' (today)':''}</td>
+      <td><div class="td-actions">
+        <button class="icon-btn" onclick="openEdit(${c.id})" title="Edit">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="icon-btn" onclick="openEmailFor(${c.id})" title="Generate email" style="color:var(--accent)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </button>
+        <button class="icon-btn" onclick="deleteContact(${c.id})" title="Delete" style="color:var(--red)">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function renderFollowups() {
+  const el = document.getElementById('followup-list');
+  const due = contacts.filter(c=>c.followUp&&!c.stage.includes('Closed')).sort((a,b)=>a.followUp.localeCompare(b.followUp));
+  if(!due.length) { el.innerHTML='<div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>No follow-ups scheduled.<br>Edit contacts to add follow-up dates.</p></div>'; return; }
+  el.innerHTML = due.map(c => {
+    const du = daysUntil(c.followUp);
+    const cls = du<0 ? 'fu-card overdue' : du===0 ? 'fu-card due-today' : du<=3 ? 'fu-card due-soon' : 'fu-card';
+    const labelCls = du<0 ? 'overdue' : du===0 ? 'today' : 'soon';
+    const label = du<0 ? `${Math.abs(du)}d overdue` : du===0 ? 'Due today' : du===1 ? 'Due tomorrow' : `Due in ${du} days`;
+    return `<div class="${cls}" onclick="openEdit(${c.id})">
+      <div class="fu-card-left">
+        <div class="fu-org">${c.org}</div>
+        <div class="fu-meta">
+          <span>${c.contact||'No contact name'}</span>
+          <span>${stagePill(c.stage)}</span>
+          <span>${stars(c.rating||0,'12px')}</span>
+        </div>
+        ${c.notes ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">${c.notes.substring(0,80)}${c.notes.length>80?'…':''}</div>` : ''}
+      </div>
+      <div class="fu-date">
+        <div class="fu-days ${labelCls}">${label}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${fmtDate(c.followUp)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderEmailContacts() {
+  const sel = document.getElementById('email-contact');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Choose a contact —</option>';
+  contacts.filter(c=>!c.stage.includes('Closed lost')).sort((a,b)=>a.org.localeCompare(b.org)).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = `${c.org}${c.contact?' ('+c.contact+')':''}`;
+    sel.appendChild(opt);
+  });
+  if(cur) sel.value = cur;
+}
+
+const EMAIL_TEMPLATES = {
+  intro: (c, sender, yourOrg) => `Subject: Partnership opportunity for ${c.org}
+
+Dear ${c.contact ? c.contact.split(' ')[0] : 'Team'},
+
+I hope this message finds you well! My name is ${sender||'[Your name]'}, and I'm reaching out from ${yourOrg||'[Your organization]'}.
+
+I've been following the incredible work that ${c.org} does for youth in Philadelphia${c.addr ? ` — particularly in the ${c.addr.split(',')[0]} area` : ''}, and I believe there may be a great opportunity for us to work together.
+
+${c.sport ? `Your focus on ${c.sport} aligns perfectly with our mission, and we'd love to explore how we might support your programs.` : `Your programs align closely with our mission, and we'd love to explore how we might collaborate.`}
+
+Would you be open to a brief 20-minute call to learn more about what we offer and discuss how it might benefit your athletes and community?
+
+I'd love to connect at your convenience. Please feel free to reply to this email or reach me at [your phone].
+
+Looking forward to hearing from you,
+${sender||'[Your name]'}
+${yourOrg||'[Your organization]'}
+[Your phone] | [Your email]`,
+
+  followup: (c, sender, yourOrg) => `Subject: Following up — ${yourOrg||'[Your organization]'} + ${c.org}
+
+Dear ${c.contact ? c.contact.split(' ')[0] : 'Team'},
+
+I wanted to follow up on my previous message about a potential partnership between ${yourOrg||'[Your organization]'} and ${c.org}.
+
+I know how busy this time of year can be${c.sport ? ` with ${c.sport} season` : ''}, so I completely understand if my earlier note got buried. I wanted to make sure it didn't fall through the cracks.
+
+In short, we're looking to connect with organizations doing meaningful work for Philadelphia youth, and ${c.org} immediately came to mind.
+
+If you have even 15 minutes in the coming weeks, I'd love to share more. If now isn't the right time, I'm happy to reconnect whenever works better for you.
+
+Thanks for all you do for our community!
+
+Best,
+${sender||'[Your name]'}
+${yourOrg||'[Your organization]'}
+[Your phone] | [Your email]`,
+
+  meeting: (c, sender, yourOrg) => `Subject: Request to meet — ${c.org} + ${yourOrg||'[Your organization]'}
+
+Dear ${c.contact ? c.contact.split(' ')[0] : 'Team'},
+
+Thank you for your time and for the conversation we've had about ${c.org}'s programs. It's clear you're doing exceptional work for Philadelphia youth${c.sport ? ` through ${c.sport}` : ''}.
+
+I'd love to schedule a more formal meeting to dig deeper into how ${yourOrg||'[Your organization]'} might be able to support ${c.org} — whether through funding, programming support, or another form of partnership.
+
+Would any of the following times work for a 30-minute call?
+  • [Date/time option 1]
+  • [Date/time option 2]
+  • [Date/time option 3]
+
+Alternatively, feel free to book directly at [your scheduling link].
+
+I look forward to connecting!
+
+Warm regards,
+${sender||'[Your name]'}
+${yourOrg||'[Your organization]'}
+[Your phone] | [Your email]`,
+
+  proposal: (c, sender, yourOrg) => `Subject: Proposal summary — ${yourOrg||'[Your organization]'} partnership with ${c.org}
+
+Dear ${c.contact ? c.contact.split(' ')[0] : 'Team'},
+
+Thank you for taking the time to meet and discuss the exciting work happening at ${c.org}. I truly enjoyed learning more about your ${c.sport ? c.sport + ' programs' : 'programs'} and the impact you're having on young people in Philadelphia.
+
+As discussed, I've attached / outlined our proposal for a partnership. In summary, here's what we're proposing:
+
+  • [Key offering 1]
+  • [Key offering 2]
+  • [Timeline and next steps]
+
+We believe this partnership would directly benefit your athletes and expand the resources available to your community.
+
+Please take a look and let me know if you have any questions. I'm happy to jump on a quick call to walk through the details.
+
+Looking forward to your thoughts!
+
+Best,
+${sender||'[Your name]'}
+${yourOrg||'[Your organization]'}
+[Your phone] | [Your email]`,
+
+  thanks: (c, sender, yourOrg) => `Subject: Great meeting, ${c.contact ? c.contact.split(' ')[0] : 'thank you'}!
+
+Dear ${c.contact ? c.contact.split(' ')[0] : 'Team'},
+
+Thank you so much for taking the time to meet with me today. It was a pleasure learning more about ${c.org} and the incredible work you're doing${c.sport ? ` in ${c.sport}` : ''} for Philadelphia's youth.
+
+A few takeaways from our conversation:
+  • [Key point from the meeting]
+  • [Action item you're following up on]
+  • [Next step agreed upon]
+
+I'll follow up with [next step] by [date]. In the meantime, please don't hesitate to reach out with any questions.
+
+Really excited about the possibility of working together!
+
+Warmly,
+${sender||'[Your name]'}
+${yourOrg||'[Your organization]'}
+[Your phone] | [Your email]`,
+
+  checkin: (c, sender, yourOrg) => `Subject: Checking in — ${c.org} + ${yourOrg||'[Your organization]'}
+
+Dear ${c.contact ? c.contact.split(' ')[0] : 'Team'},
+
+I hope you're having a great season! I wanted to reach out and check in on how things are going at ${c.org}${c.sport ? ` with your ${c.sport} programs` : ''}.
+
+At ${yourOrg||'[Your organization]'}, we've had an exciting few months [brief update], and I've been thinking about the work you're doing for young athletes in Philadelphia.
+
+I'd love to reconnect and hear how things are going on your end. If you're open to it, could we schedule a brief call in the next few weeks?
+
+Also, if there's anything we can do to support your programs this season, please don't hesitate to reach out.
+
+Thanks again for all you do for Philly youth!
+
+Best,
+${sender||'[Your name]'}
+${yourOrg||'[Your organization]'}
+[Your phone] | [Your email]`
+};
+
+function updateEmailPreview() {
+  const cid = parseInt(document.getElementById('email-contact').value);
+  const tpl = document.getElementById('email-template').value;
+  const sender = document.getElementById('email-sender').value;
+  const yourOrg = document.getElementById('email-yourorg').value;
+  const out = document.getElementById('email-output');
+  if(!cid) { out.textContent = 'Select a contact and template above to generate an email.'; return; }
+  const c = contacts.find(x=>x.id===cid);
+  if(!c) return;
+  out.textContent = EMAIL_TEMPLATES[tpl](c, sender, yourOrg);
+}
+
+function copyEmail() {
+  const text = document.getElementById('email-output').textContent;
+  if(!text || text.includes('Select a contact')) { showToast('Please select a contact first'); return; }
+  navigator.clipboard.writeText(text).then(()=>showToast('Email copied to clipboard!')).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    showToast('Email copied!');
+  });
+}
+
+function markContacted() {
+  const cid = parseInt(document.getElementById('email-contact').value);
+  if(!cid) { showToast('Select a contact first'); return; }
+  const c = contacts.find(x=>x.id===cid);
+  if(!c) return;
+  c.stage = 'Contacted';
+  c.lastContact = today();
+  save(); renderAll();
+  showToast(`${c.org} marked as Contacted`);
+}
+
+function openEmailFor(id) {
+  switchView('email', document.querySelector('.nav-item:nth-child(4)'));
+  setTimeout(()=>{
+    document.getElementById('email-contact').value = id;
+    updateEmailPreview();
+  }, 50);
+}
+
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('.rating-star').forEach((s,i) => {
+    s.classList.toggle('active', i < n);
+  });
+}
+
+function openAdd() {
+  editingId = null; currentRating = 0;
+  document.getElementById('modal-title').textContent = 'Add contact';
+  document.getElementById('delete-btn').style.display = 'none';
+  ['org','contact','title','phone','email','sport','addr','notes'].forEach(f => document.getElementById('f-'+f).value='');
+  document.getElementById('f-stage').value = 'Prospect';
+  document.getElementById('f-source').value = 'Manual entry';
+  document.getElementById('f-last').value = '';
+  document.getElementById('f-next').value = '';
+  document.querySelectorAll('.rating-star').forEach(s=>s.classList.remove('active'));
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openEdit(id) {
+  const c = contacts.find(x=>x.id===id); if(!c) return;
+  editingId = id; currentRating = c.rating||0;
+  document.getElementById('modal-title').textContent = 'Edit contact';
+  document.getElementById('delete-btn').style.display = '';
+  document.getElementById('f-org').value = c.org||'';
+  document.getElementById('f-contact').value = c.contact||'';
+  document.getElementById('f-title').value = c.title||'';
+  document.getElementById('f-phone').value = c.phone||'';
+  document.getElementById('f-email').value = c.email||'';
+  document.getElementById('f-sport').value = c.sport||'';
+  document.getElementById('f-addr').value = c.addr||'';
+  document.getElementById('f-stage').value = c.stage||'Prospect';
+  document.getElementById('f-source').value = c.source||'Manual entry';
+  document.getElementById('f-last').value = c.lastContact||'';
+  document.getElementById('f-next').value = c.followUp||'';
+  document.getElementById('f-notes').value = c.notes||'';
+  document.querySelectorAll('.rating-star').forEach((s,i)=>s.classList.toggle('active',i<currentRating));
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+function saveContact() {
+  const org = document.getElementById('f-org').value.trim();
+  if(!org) { showToast('Organization name is required'); return; }
+  const data = {
+    org, contact:document.getElementById('f-contact').value.trim(),
+    title:document.getElementById('f-title').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    sport:document.getElementById('f-sport').value.trim(),
+    addr:document.getElementById('f-addr').value.trim(),
+    stage:document.getElementById('f-stage').value,
+    source:document.getElementById('f-source').value,
+    lastContact:document.getElementById('f-last').value,
+    followUp:document.getElementById('f-next').value,
+    rating:currentRating,
+    notes:document.getElementById('f-notes').value.trim(),
+  };
+  if(editingId) {
+    const i = contacts.findIndex(c=>c.id===editingId);
+    if(i>=0) contacts[i] = {...contacts[i], ...data};
+    showToast('Contact updated');
+  } else {
+    contacts.push({id:nextId++, ...data});
+    showToast('Contact added');
+  }
+  save(); closeModal(); renderAll(); renderEmailContacts();
+}
+
+function deleteCurrentContact() {
+  if(!editingId) return;
+  if(!confirm('Delete this contact? This cannot be undone.')) return;
+  deleteContact(editingId); closeModal();
+}
+
+function deleteContact(id) {
+  const c = contacts.find(x=>x.id===id);
+  contacts = contacts.filter(x=>x.id!==id);
+  save(); renderAll(); renderEmailContacts();
+  showToast(`${c?.org||'Contact'} deleted`);
+}
+
+function sortBy(k) { if(sortKey===k) sortDir*=-1; else{sortKey=k;sortDir=1;} renderContacts(); }
+
+function switchView(view, el) {
+  activeView = view;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  const titles = {pipeline:'Pipeline',contacts:'All contacts',followups:'Follow-ups',email:'Email generator'};
+  document.getElementById('view-title').textContent = titles[view]||view;
+}
+
+function exportCSV() {
+  const h = ['Organization','Contact','Title','Phone','Email','Sport','Address','Stage','Source','Rating','Last contact','Follow-up','Notes'];
+  const rows = contacts.map(c=>[c.org,c.contact,c.title,c.phone,c.email,c.sport,c.addr,c.stage,c.source,c.rating||0,c.lastContact,c.followUp,c.notes].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([[h.join(','),...rows].join('\n')],{type:'text/csv'}));
+  a.download = `youth_sports_crm_${today()}.csv`;
+  a.click();
+  showToast('CSV exported!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function renderAll() {
+  renderMetrics(); renderPipeline(); renderContacts(); renderFollowups();
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+renderAll();
+renderEmailContacts();
+</script>
+</body>
+</html>
